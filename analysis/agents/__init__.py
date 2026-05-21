@@ -13,6 +13,12 @@ from analysis.analyzers.concentration import (
     calc_sector_concentration, detect_concentration_risks,
 )
 from analysis.analyzers.stress_test import run_stress_test
+from analysis.analyzers.optimization import (
+    optimize_max_sharpe, optimize_min_volatility, risk_parity_weights,
+    compute_efficient_frontier, compute_current_portfolio,
+    full_portfolio_optimization,
+    OptimizationResult, PortfolioOptimizationResult, EfficientFrontierPoint,
+)
 from analysis.debate.debate import run_debate
 
 __all__ = [
@@ -25,5 +31,9 @@ __all__ = [
     "calc_portfolio_hhi", "calc_effective_n", "calc_top_n_concentration",
     "calc_sector_concentration", "detect_concentration_risks",
     "run_stress_test",
+    "optimize_max_sharpe", "optimize_min_volatility", "risk_parity_weights",
+    "compute_efficient_frontier", "compute_current_portfolio",
+    "full_portfolio_optimization",
+    "OptimizationResult", "PortfolioOptimizationResult", "EfficientFrontierPoint",
     "run_debate",
 ]

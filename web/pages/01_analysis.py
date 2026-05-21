@@ -103,6 +103,72 @@ with tabs[0]:
         else:
             st.caption("需要 2 只以上标的相关性矩阵")
 
+    # 组合优化
+    opt = ctx.optimization_result
+    if opt:
+        st.subheader("投资组合优化")
+        col_a, col_b = st.columns(2)
+        col_a.metric("夏普提升空间", f"{opt.improvement_potential:.1f}%",
+                     delta=None if opt.improvement_potential < 5 else "建议优化")
+
+        best = opt.max_sharpe or opt.min_vol
+        if best:
+            col_b.metric("最优夏普比率", f"{best.sharpe_ratio:.2f}",
+                         delta=f"{best.expected_return:.1f}% 收益 / {best.expected_volatility:.1f}% 波动")
+
+        opts = []
+        for name, res in [("当前组合", opt.current), ("最大夏普", opt.max_sharpe),
+                          ("最小波动", opt.min_vol), ("风险平价", opt.risk_parity)]:
+            if res:
+                opts.append({
+                    "策略": name,
+                    "预期收益(%)": res.expected_return,
+                    "预期波动(%)": res.expected_volatility,
+                    "夏普比率": res.sharpe_ratio,
+                    "分散化比率": res.diversification_ratio,
+                })
+
+        if opts:
+            st.dataframe(pd.DataFrame(opts), use_container_width=True, hide_index=True)
+
+        # 有效前沿
+        ef = opt.efficient_frontier
+        if len(ef) > 2:
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=[p.volatility for p in ef],
+                y=[p.return_val for p in ef],
+                mode="markers+lines",
+                name="有效前沿",
+                marker=dict(color="blue", size=6),
+                line=dict(dash="dot", width=1),
+            ))
+            # 标记当前/最优组合
+            for label, res, color in [
+                ("当前", opt.current, "red"),
+                ("最大夏普", opt.max_sharpe, "green"),
+                ("最小波动", opt.min_vol, "orange"),
+            ]:
+                if res:
+                    fig.add_trace(go.Scatter(
+                        x=[res.expected_volatility], y=[res.expected_return],
+                        mode="markers+text",
+                        name=label,
+                        marker=dict(color=color, size=12, symbol="star"),
+                        text=[label],
+                        textposition="top center",
+                    ))
+            fig.update_layout(
+                title="有效前沿",
+                xaxis_title="预期波动率(%)",
+                yaxis_title="预期收益率(%)",
+                height=450,
+                margin=dict(l=20, r=20, t=40, b=20),
+            )
+            st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.caption("需要 2 只以上有足够历史数据的标的进行组合优化")
+
 # ── P4 理论评估 ────────────────────────────────────────
 
 with tabs[1]:

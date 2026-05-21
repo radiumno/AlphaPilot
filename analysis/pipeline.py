@@ -17,6 +17,7 @@ from analysis.analyzers.concentration import (
     calc_sector_concentration, detect_concentration_risks,
 )
 from analysis.analyzers.stress_test import run_stress_test
+from analysis.analyzers.optimization import full_portfolio_optimization
 from analysis.theories import create_registry, TheoryRegistry
 
 
@@ -34,6 +35,7 @@ class AnalysisContext:
         self.theory_results: dict[str, list[TheoryResult]] = {}
         self.debate_results: dict[str, DebateResult] = {}
         self.phase_outputs: dict[str, dict] = {}
+        self.optimization_result = None
 
     @property
     def positions(self) -> list[Position]:
@@ -209,6 +211,21 @@ class AnalysisPipeline:
                 nav_dict[pos.symbol] = asset_data.nav
 
         ctx.correlation_result = calc_correlation_matrix(nav_dict) if len(nav_dict) >= 2 else None
+
+        # 组合优化 — 从 NAV 计算日收益率
+        returns_dict: dict[str, pd.Series] = {}
+        for pos in positions:
+            asset_data = ctx.collected_data.assets.get(pos.symbol)
+            if asset_data is not None and asset_data.nav is not None and len(asset_data.nav) > 1:
+                ret = asset_data.nav.pct_change().dropna()
+                if len(ret) > 10:
+                    returns_dict[pos.symbol] = ret
+
+        if len(returns_dict) >= 2:
+            returns_df = pd.DataFrame(returns_dict)
+            total_value = sum(p.market_value for p in positions) or 1
+            weights = {p.symbol: p.market_value / total_value for p in positions}
+            ctx.optimization_result = full_portfolio_optimization(weights, returns_df)
 
         return {
             "status": "done",
