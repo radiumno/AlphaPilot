@@ -29,10 +29,14 @@ class RiskMetrics(BaseModel):
     name: str
     volatility: float = Field(default=0.0, description="年化波动率(%)")
     downside_volatility: float = Field(default=0.0, description="下行波动率(%)")
+    sortino_ratio: Optional[float] = Field(default=None, description="Sortino 比率(下行风险调整收益)")
+    calmar_ratio: Optional[float] = Field(default=None, description="Calmar 比率(收益/最大回撤)")
+    information_ratio: Optional[float] = Field(default=None, description="Information 比率(超额收益/跟踪误差)")
     var: VaRResult = Field(default_factory=VaRResult)
     drawdown: DrawdownInfo = Field(default_factory=DrawdownInfo)
     beta: Optional[float] = Field(default=None, description="Beta 系数")
     alpha: Optional[float] = Field(default=None, description="Alpha 系数(%)")
+    annualized_return: Optional[float] = Field(default=None, description="年化收益率(%)")
     data_source: str = ""
 
 

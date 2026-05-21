@@ -300,6 +300,25 @@ class AnalysisPipeline:
 
         risk_score = max(0, 100 - score_deduction)
 
+        # 提取风险调整指标（取第一个有数据的标的）
+        sortino_ratio = None
+        calmar_ratio = None
+        info_ratio = None
+        annualized_return = None
+        downside_vol = None
+        if ctx.risk_result and ctx.risk_result.asset_risks:
+            for ar in ctx.risk_result.asset_risks:
+                if ar.sortino_ratio is not None:
+                    sortino_ratio = ar.sortino_ratio
+                if ar.calmar_ratio is not None:
+                    calmar_ratio = ar.calmar_ratio
+                if ar.information_ratio is not None:
+                    info_ratio = ar.information_ratio
+                if ar.annualized_return is not None:
+                    annualized_return = ar.annualized_return
+                if ar.downside_volatility > 0:
+                    downside_vol = ar.downside_volatility
+
         return {
             "status": "done",
             "risk_score": risk_score,
@@ -308,6 +327,11 @@ class AnalysisPipeline:
             "risk_flags": risk_flags,
             "concentration_hhi": hhi,
             "portfolio_vol": ctx.risk_result.portfolio_volatility if ctx.risk_result else None,
+            "downside_vol": downside_vol,
+            "sortino_ratio": sortino_ratio,
+            "calmar_ratio": calmar_ratio,
+            "information_ratio": info_ratio,
+            "annualized_return": annualized_return,
         }
 
     # ── P7: 操作推荐 ──────────────────────────────────────────────

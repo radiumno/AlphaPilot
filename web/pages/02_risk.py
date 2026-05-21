@@ -69,9 +69,27 @@ if var_data:
 # ── 波动率分析 ────────────────────────────────────────
 
 st.subheader("波动率分析")
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 col1.metric("组合波动率(年化)", f"{p6.get('portfolio_vol', 0):.2f}%")
 col2.metric("下行波动率", f"{p6.get('downside_vol', 0):.2f}%")
+col3.metric("年化收益率", f"{p6.get('annualized_return', 0):.2f}%")
+
+# 风险调整收益指标
+sortino = p6.get("sortino_ratio")
+calmar = p6.get("calmar_ratio")
+info = p6.get("information_ratio")
+if any(x is not None for x in [sortino, calmar, info]):
+    st.subheader("风险调整收益指标")
+    c1, c2, c3 = st.columns(3)
+    if sortino is not None:
+        c1.metric("Sortino 比率", f"{sortino:.2f}",
+                  help="每单位下行风险的超额收益，越高越好")
+    if calmar is not None:
+        c2.metric("Calmar 比率", f"{calmar:.2f}",
+                  help="年化收益与最大回撤之比，越高越好")
+    if info is not None:
+        c3.metric("Information 比率", f"{info:.2f}",
+                  help="每单位跟踪误差的超额收益，衡量主动管理能力")
 
 # ── 压力测试详情 ──────────────────────────────────────
 

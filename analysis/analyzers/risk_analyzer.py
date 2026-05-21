@@ -111,13 +111,36 @@ def analyze_risk_single(
     # 回撤
     metrics.drawdown = analyze_drawdown(nav)
 
-    # Beta / Alpha
+    # 年化收益率（用于风险调整指标）
+    total_return = (nav.iloc[-1] / nav.iloc[0]) - 1 if len(nav) > 1 else 0
+    n_years = len(nav) / 252
+    annual_ret = ((1 + total_return) ** (1 / max(n_years, 0.01)) - 1) * 100 if n_years > 0 else 0
+    metrics.annualized_return = round(float(annual_ret), 4)
+
+    # Sortino 比率 = 年化收益 / 下行波动率
+    if metrics.downside_volatility > 0.01:
+        metrics.sortino_ratio = round(float(annual_ret / metrics.downside_volatility), 4)
+
+    # Calmar 比率 = 年化收益 / 最大回撤
+    if metrics.drawdown.max_drawdown > 0.01:
+        metrics.calmar_ratio = round(float(annual_ret / metrics.drawdown.max_drawdown), 4)
+
+    # Information 比率 + Beta / Alpha（需要基准）
     if benchmark_nav is not None and len(benchmark_nav) > 20:
         bench_returns = benchmark_nav.pct_change().dropna()
         common = returns.index.intersection(bench_returns.index)
         if len(common) > 20:
             r = returns.loc[common]
             b = bench_returns.loc[common]
+
+            # Information Ratio
+            excess = r - b
+            tracking_error = excess.std() * np.sqrt(252)
+            if tracking_error > 0.0001:
+                excess_return_annual = (r.mean() - b.mean()) * 252
+                metrics.information_ratio = round(float(excess_return_annual / tracking_error), 4)
+
+            # Beta / Alpha
             cov = np.cov(r, b)
             if cov[1, 1] != 0:
                 metrics.beta = round(float(cov[0, 1] / cov[1, 1]), 4)
