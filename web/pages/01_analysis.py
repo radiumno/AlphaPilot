@@ -284,4 +284,32 @@ with tabs[3]:
             })
         st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
+    # 再平衡方案
+    if ctx.rebalancing_plan:
+        plan = ctx.rebalancing_plan
+        st.subheader("再平衡方案")
+        col_r1, col_r2, col_r3 = st.columns(3)
+        col_r1.metric("目标策略", plan.target_method)
+        col_r2.metric("换手率", f"{plan.total_turnover:.1f}%",
+                      delta=f"{plan.n_trades} 笔交易")
+        col_r3.metric("预估成本", f"¥{plan.estimated_cost:.2f}")
+
+        if plan.trades:
+            trade_rows = []
+            for t in plan.trades:
+                if t.action == "持有":
+                    continue
+                trade_rows.append({
+                    "操作": {"买入": "🟢 买入", "卖出": "🔴 卖出"}.get(t.action, t.action),
+                    "标的": t.symbol,
+                    "名称": t.name,
+                    "当前权重": f"{t.current_weight:.1f}%",
+                    "目标权重": f"{t.target_weight:.1f}%",
+                    "偏差": f"{t.weight_diff:+.1f}%",
+                    "交易金额": f"¥{abs(t.trade_value):,.0f}",
+                    "紧急度": {"高": "🔴 高", "中": "🟡 中", "低": "🟢 低"}.get(t.urgency, t.urgency),
+                })
+            if trade_rows:
+                st.dataframe(pd.DataFrame(trade_rows), use_container_width=True, hide_index=True)
+
     st.caption("本分析仅供参考，不构成投资建议。")

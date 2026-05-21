@@ -18,6 +18,7 @@ from analysis.analyzers.concentration import (
 )
 from analysis.analyzers.stress_test import run_stress_test
 from analysis.analyzers.optimization import full_portfolio_optimization
+from analysis.analyzers.rebalance import generate_rebalancing_plan
 from analysis.theories import create_registry, TheoryRegistry
 
 
@@ -36,6 +37,7 @@ class AnalysisContext:
         self.debate_results: dict[str, DebateResult] = {}
         self.phase_outputs: dict[str, dict] = {}
         self.optimization_result = None
+        self.rebalancing_plan = None
 
     @property
     def positions(self) -> list[Position]:
@@ -430,6 +432,18 @@ class AnalysisPipeline:
                 "action": pos_action,
             })
 
+        # 再平衡方案（基于组合优化结果）
+        if ctx.optimization_result and ctx.optimization_result.max_sharpe:
+            total_val = sum(p.market_value for p in positions) or 1
+            cw = {p.symbol: p.market_value / total_val for p in positions}
+            names = {p.symbol: p.name for p in positions}
+            prices = {p.symbol: p.market_price for p in positions}
+            target = ctx.optimization_result.max_sharpe
+            ctx.rebalancing_plan = generate_rebalancing_plan(
+                current_weights=cw, names=names, current_prices=prices,
+                optimal_result=target, total_value=total_val,
+            )
+
         return {
             "status": "done",
             "composite_score": round(composite_score, 1),
@@ -439,5 +453,11 @@ class AnalysisPipeline:
             "theory_avg_score": round(theory_avg_score, 1),
             "risk_score": risk_score,
             "position_actions": position_actions,
+            "rebalance": {
+                "has_plan": ctx.rebalancing_plan is not None,
+                "turnover": ctx.rebalancing_plan.total_turnover if ctx.rebalancing_plan else 0,
+                "n_trades": ctx.rebalancing_plan.n_trades if ctx.rebalancing_plan else 0,
+                "cost": ctx.rebalancing_plan.estimated_cost if ctx.rebalancing_plan else 0,
+            } if ctx.rebalancing_plan else None,
             "disclaimer": "本分析仅供参考，不构成投资建议。投资有风险，决策需谨慎。数据来源详见各阶段输出。",
         }
