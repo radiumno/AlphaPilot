@@ -2,7 +2,7 @@
 
 import pandas as pd
 import numpy as np
-from analysis.agents.correlation import calc_correlation_matrix
+from analysis.analyzers.correlation import calc_correlation_matrix
 
 
 def _make_nav(seed: int, n: int = 252, start: float = 1.0) -> pd.Series:

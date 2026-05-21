@@ -64,6 +64,57 @@ def _show_p3_portfolio(ctx) -> None:
         console.print(sec_table)
 
 
+def _show_p5_debate(ctx) -> None:
+    """显示辩论引擎结果"""
+    p5 = ctx.phase_outputs.get("P5", {})
+    if p5.get("status") == "skipped":
+        console.print(Panel("辩论引擎已跳过（未配置 API Key）", style="dim"))
+        console.print()
+        return
+    if p5.get("status") != "done":
+        return
+
+    from rich.tree import Tree as RTree
+
+    debate_results = ctx.debate_results
+    if not debate_results:
+        return
+
+    tree = RTree("[bold magenta]辩论引擎 — 3 阶段多智能体对抗[/bold magenta]")
+
+    for stage_name, debate in debate_results.items():
+        label = {"structure": "阶段1: 持仓结构合理性",
+                 "rebalance": "阶段2: 调仓方案",
+                 "priority": "阶段3: 优先级裁决"}.get(stage_name, stage_name)
+        decision_cn = {"hold": "持有", "adjust": "调整",
+                       "reduce": "减仓", "buy": "加仓",
+                       "skip": "跳过"}.get(debate.decision, debate.decision)
+
+        stage = tree.add(
+            f"[bold]{label}[/bold] — "
+            f"决策: [{'green' if debate.decision in ('hold','buy') else 'yellow'}]{decision_cn}[/] "
+            f"置信度: {debate.confidence:.0%}"
+        )
+        if debate.final_consensus:
+            stage.add(f"[dim]共识: {debate.final_consensus[:300]}[/dim]")
+
+        for rnd in debate.rounds:
+            rnd_label = f"辩论{rnd.round_number}"
+            if rnd.consensus:
+                rnd_label += f" (共识: {rnd.consensus[:100]})"
+            rnd_branch = stage.add(rnd_label)
+            for arg in rnd.arguments:
+                agent_label = {
+                    "conservative": "保守派分析师",
+                    "aggressive": "进取派分析师",
+                    "neutral": "首席分析师",
+                }.get(arg.agent_name, arg.agent_name)
+                rnd_branch.add(f"[cyan]{agent_label}[/]: {arg.content[:200]}")
+
+    console.print(tree)
+    console.print()
+
+
 def _show_p4_theories(ctx) -> None:
     """显示理论评估结果"""
     p4 = ctx.phase_outputs.get("P4", {})
@@ -174,7 +225,7 @@ def analyze_cmd(csv_path: str, stages: Optional[str] = None) -> None:
     ctx = pipeline.run(portfolio, stages=target_stages)
 
     # 显示各阶段结果
-    for phase in (target_stages or ["P2", "P3", "P4", "P6", "P7"]):
+    for phase in (target_stages or ["P2", "P3", "P4", "P5", "P6", "P7"]):
         output = ctx.phase_outputs.get(phase, {})
         status = output.get("status", "unknown")
         if status == "not_implemented" or status == "skipped":
@@ -184,6 +235,8 @@ def analyze_cmd(csv_path: str, stages: Optional[str] = None) -> None:
             _show_p3_portfolio(ctx)
         elif phase == "P4":
             _show_p4_theories(ctx)
+        elif phase == "P5":
+            _show_p5_debate(ctx)
         elif phase == "P6":
             _show_p6_risk(ctx)
         elif phase == "P7":

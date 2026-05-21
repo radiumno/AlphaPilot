@@ -1,7 +1,7 @@
 """测试主动基金分析器"""
 
 import pandas as pd
-from analysis.agents.fund_analyzer import analyze_fund, calc_sharpe_ratio, calc_max_drawdown
+from analysis.analyzers.fund_analyzer import analyze_fund, calc_sharpe_ratio, calc_max_drawdown
 
 
 def test_calc_sharpe_ratio():

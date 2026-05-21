@@ -2,7 +2,7 @@
 
 import pandas as pd
 import numpy as np
-from analysis.agents.etf_analyzer import analyze_etf, calc_tracking_error, calc_concentration
+from analysis.analyzers.etf_analyzer import analyze_etf, calc_tracking_error, calc_concentration
 
 
 def test_calc_tracking_error():

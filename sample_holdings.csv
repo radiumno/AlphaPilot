@@ -1,0 +1,5 @@
+symbol,name,asset_type,shares,cost_price,market,market_price
+510050,上证50ETF,etf,10000,3.2,cn,3.5
+511880,银华日利,bond,5000,100.5,cn,100.8
+159915,创业板ETF,etf,8000,1.5,cn,1.2
+QQQ,纳斯达克ETF,etf,200,370.5,us,380.0

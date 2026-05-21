@@ -3,9 +3,10 @@ requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta:__legacy__"
 
 [project]
-name = "fund-analyzer"
-version = "0.1.0"
-description = "基金/ETF 智能分析系统 — 多智能体辩论 + 投资大师理论分析"
+name = "alphapilot"
+version = "0.2.0"
+description = "AlphaPilot 阿尔法领航者 — AI 驱动的基金/ETF 智能分析系统"
+readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.0",
@@ -27,12 +28,12 @@ dev = [
 cn = ["akshare>=1.0"]
 global = ["yfinance>=0.2"]
 all = ["akshare>=1.0", "yfinance>=0.2"]
-web = ["streamlit>=1.28", "fastapi>=0.104", "uvicorn>=0.24"]
+web = ["streamlit>=1.28"]
 mcp = ["mcp>=0.1"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["config*", "portfolio*", "analysis*", "data*", "cli*"]
+include = ["config*", "portfolio*", "analysis*", "data*", "cli*", "web*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

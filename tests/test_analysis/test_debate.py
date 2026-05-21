@@ -1,7 +1,7 @@
 """辩论引擎测试"""
 
 from portfolio.models import Position, AssetType, MarketType
-from analysis.agents.debate import run_debate
+from analysis.debate.debate import run_debate
 from analysis.models.theory import DebateResult, DebateRound, DebateArgument
 from data.llm import LLMClient
 

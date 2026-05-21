@@ -2,7 +2,7 @@
 
 import pandas as pd
 import numpy as np
-from analysis.agents.risk_analyzer import (
+from analysis.analyzers.risk_analyzer import (
     calc_var_parametric, calc_var_historical, calc_cvar,
     calc_downside_volatility, analyze_drawdown,
     analyze_risk_single, analyze_portfolio_risk,

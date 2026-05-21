@@ -8,15 +8,15 @@ from analysis.models.risk import PortfolioRiskResult, RiskMetrics
 from analysis.models.correlation import CorrelationMatrix
 from analysis.models.theory import TheoryResult, StressTestResult, DebateResult
 from analysis.models.collected_data import CollectedData, AssetCollectedData
-from analysis.agents.etf_analyzer import analyze_etf, calc_concentration
-from analysis.agents.fund_analyzer import analyze_fund
-from analysis.agents.risk_analyzer import analyze_risk_single, analyze_portfolio_risk
-from analysis.agents.correlation import calc_correlation_matrix
-from analysis.agents.concentration import (
+from analysis.analyzers.etf_analyzer import analyze_etf, calc_concentration
+from analysis.analyzers.fund_analyzer import analyze_fund
+from analysis.analyzers.risk_analyzer import analyze_risk_single, analyze_portfolio_risk
+from analysis.analyzers.correlation import calc_correlation_matrix
+from analysis.analyzers.concentration import (
     calc_portfolio_hhi, calc_effective_n, calc_top_n_concentration,
     calc_sector_concentration, detect_concentration_risks,
 )
-from analysis.agents.stress_test import run_stress_test
+from analysis.analyzers.stress_test import run_stress_test
 from analysis.theories import create_registry, TheoryRegistry
 
 
@@ -238,7 +238,7 @@ class AnalysisPipeline:
 
     def _phase_debate(self, ctx: AnalysisContext) -> dict:
         """P5: 3 阶段多智能体辩论（结构/调仓/优先级）"""
-        from analysis.agents.debate import run_debate
+        from analysis.debate.debate import run_debate
 
         ctx.debate_results = run_debate(ctx.positions)
 

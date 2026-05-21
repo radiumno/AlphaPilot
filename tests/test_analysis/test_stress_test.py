@@ -1,7 +1,7 @@
 """压力测试引擎测试"""
 
 from portfolio.models import Position, AssetType, MarketType
-from analysis.agents.stress_test import run_stress_test
+from analysis.analyzers.stress_test import run_stress_test
 
 
 def _make_pos(symbol: str, value: float, asset_type: str = "etf", name: str = "") -> Position:

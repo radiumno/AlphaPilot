@@ -1,7 +1,7 @@
 """集中度分析器测试"""
 
 from portfolio.models import Position, AssetType, MarketType
-from analysis.agents.concentration import (
+from analysis.analyzers.concentration import (
     calc_portfolio_hhi, calc_effective_n, calc_top_n_concentration,
     calc_sector_concentration, detect_concentration_risks,
 )
