@@ -13,6 +13,10 @@ import pandas as pd
 from portfolio.loader import load_positions_from_csv
 from portfolio.models import Portfolio
 from analysis.pipeline import AnalysisPipeline
+from data.cache import SQLiteCache, CachedProvider
+
+# 缓存
+_cache = SQLiteCache()
 
 st.set_page_config(
     page_title="AlphaPilot 阿尔法领航者",
@@ -90,7 +94,21 @@ with st.spinner("正在运行 7 阶段分析流水线..."):
     portfolio = Portfolio(positions=positions)
     portfolio.recalc()
 
-    pipeline = AnalysisPipeline()
+    # 尝试创建数据提供者（带缓存）
+    cn_provider = None
+    global_provider = None
+    try:
+        from data.providers.akshare_provider import AkshareProvider
+        cn_provider = CachedProvider(AkshareProvider(), _cache)
+    except Exception:
+        pass
+    try:
+        from data.providers.yfinance_provider import YFinanceProvider
+        global_provider = CachedProvider(YFinanceProvider(), _cache)
+    except Exception:
+        pass
+
+    pipeline = AnalysisPipeline(cn_provider=cn_provider, global_provider=global_provider)
     ctx = pipeline.run(portfolio)
 
 # 存入 session_state 供子页面使用
